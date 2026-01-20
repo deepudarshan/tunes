@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import './App.css'
 import NavigationBar from './components/NavigationBar'
 import SongList from './components/SongList'
 import SongDisplay from './components/SongDisplay'
-import audioFile from './songs/Fukashigi No Carte _Bunny Girl Senpai_.mp3'
+
+// Dynamically import all MP3 files from the songs directory
+const songModules = import.meta.glob('./songs/*.mp3', { eager: true })
 
 function App() {
   const [selectedSong, setSelectedSong] = useState(null)
@@ -20,12 +22,13 @@ function App() {
     )
   }
 
-  const songs = [
-    {
-      name: getSongNameFromPath(audioFile),
-      src: audioFile
-    }
-  ]
+  // Dynamically create songs array from imported modules
+  const songs = useMemo(() => {
+    return Object.entries(songModules).map(([path, module]) => ({
+      name: getSongNameFromPath(path),
+      src: module.default
+    }))
+  }, [])
 
   const handleSelectSong = (song) => {
     setSelectedSong(song)
